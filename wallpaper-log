@@ -22,7 +22,7 @@
 
 set -euo pipefail
 
-LOG="$HOME/.local/share/wallpaper-rotator/wallpaper.log"
+LOG="$HOME/Desktop/wallpaper-rotator/wallpaper.log"
 mkdir -p "$(dirname "$LOG")"
 
 # Max number of entries to keep. After each write, anything older than the

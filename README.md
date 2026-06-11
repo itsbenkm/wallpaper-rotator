@@ -54,7 +54,7 @@ wallpaper-duration <time>   # Change how often the wallpaper rotates
                             #        wallpaper-duration 1d
 ```
 
-All five commands also write an entry to `~/.local/share/wallpaper-rotator/wallpaper.log` so you can see later when you toggled or changed things.
+All five commands also write an entry to `~/Desktop/wallpaper-rotator/wallpaper.log` so you can see later when you toggled or changed things.
 
 ### Typical workflow
 
@@ -70,7 +70,7 @@ All five commands also write an entry to `~/.local/share/wallpaper-rotator/wallp
 Everything the rotator does (and everything you do that affects the wallpaper) gets written to:
 
 ```
-~/.local/share/wallpaper-rotator/wallpaper.log
+~/Desktop/wallpaper-rotator/wallpaper.log
 ```
 
 ### Event types
@@ -88,11 +88,18 @@ Everything the rotator does (and everything you do that affects the wallpaper) g
 
 ```bash
 # Watch live -- new entries appear as they happen
-tail -f ~/.local/share/wallpaper-rotator/wallpaper.log
+tail -f ~/Desktop/wallpaper-rotator/wallpaper.log
 
 # Show only manual changes
-grep MANUAL ~/.local/share/wallpaper-rotator/wallpaper.log
+grep MANUAL ~/Desktop/wallpaper-rotator/wallpaper.log
 ```
+
+### Customizing the Log Location
+If you do not want your logs saved in the default `~/Desktop/wallpaper-rotator/` folder, you can easily change the path:
+1. Open the `wallpaper-log` script in any text editor.
+2. Find the line: `LOG="$HOME/Desktop/wallpaper-rotator/wallpaper.log"`
+3. Change it to wherever you want, for example: `LOG="$HOME/.local/share/wallpaper-rotator/wallpaper.log"`
+4. Run `./install.sh` again to apply the changes to your system.
 
 ---
 

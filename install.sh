@@ -2,14 +2,12 @@
 
 USER_HOME=$HOME
 INSTALL_DIR="$USER_HOME/.local/bin/wallpaper-rotator"
-LOG_DIR="$USER_HOME/.local/share/wallpaper-rotator"
 SYSTEMD_DIR="$USER_HOME/.config/systemd/user"
 
 echo "Installing Wallpaper Rotator for user: $USER"
 
 # 1. Create installation directories
 mkdir -p "$INSTALL_DIR"
-mkdir -p "$LOG_DIR"
 mkdir -p "$SYSTEMD_DIR"
 
 # 2. Copy scripts
@@ -66,4 +64,4 @@ fi
 
 echo ""
 echo "Installation complete!"
-echo "Your wallpaper will now rotate automatically. Check the log at $LOG_DIR/wallpaper.log"
+echo "Your wallpaper will now rotate automatically. Check the log at ~/Desktop/wallpaper-rotator/wallpaper.log"

@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+# =============================================================================
+#  wallpaper-log
+# -----------------------------------------------------------------------------
+#  Central logging helper. Every event in the wallpaper-rotator system writes
+#  through this script so the format stays consistent and the file gets
+#  trimmed in one place.
+#
+#  Usage:
+#      wallpaper-log <EVENT_TYPE> [detail...]
+#
+#  Examples:
+#      wallpaper-log AUTO     /home/b3n/.local/share/backgrounds/foo.jpg
+#      wallpaper-log MANUAL   /home/b3n/.local/share/backgrounds/bar.jpg
+#      wallpaper-log ON
+#      wallpaper-log OFF
+#      wallpaper-log INTERVAL "2min -> 1h"
+#
+#  All entries get a timestamp prefix. When the log file grows past MAX_LINES
+#  entries, the oldest ones are trimmed off so the file never balloons.
+# =============================================================================
+
+set -euo pipefail
+
+LOG="$HOME/.local/share/wallpaper-rotator/wallpaper.log"
+mkdir -p "$(dirname "$LOG")"
+
+# Max number of entries to keep. After each write, anything older than the
+# most recent MAX_LINES gets dropped. 500 ≈ a few weeks at hourly rotation.
+MAX_LINES=500
+
+# First argument is the event tag (AUTO / MANUAL / ON / OFF / INTERVAL).
+# Default to UNKNOWN if nothing was passed (shouldn't happen, but safe).
+event="${1:-UNKNOWN}"
+shift || true
+
+# Everything after the event tag is treated as the detail field (a path,
+# a "before -> after" interval, etc.). Empty is fine for ON/OFF events.
+detail="${*:-}"
+
+# Make sure the log file exists so the trim step doesn't error on first run.
+touch "$LOG"
+
+# Format: "YYYY-MM-DD HH:MM:SS  EVENT     detail"
+# The %-9s padding keeps the EVENT column aligned for easy scanning.
+ts=$(date '+%Y-%m-%d %H:%M:%S')
+printf '%s  %-9s %s\n' "$ts" "$event" "$detail" >> "$LOG"
+
+# Trim the file to the most recent MAX_LINES entries.
+# We use a temp file + atomic move so a crash mid-trim can't truncate the log.
+lines=$(wc -l < "$LOG")
+if [ "$lines" -gt "$MAX_LINES" ]; then
+    tmp=$(mktemp)
+    tail -n "$MAX_LINES" "$LOG" > "$tmp"
+    mv "$tmp" "$LOG"
+fi

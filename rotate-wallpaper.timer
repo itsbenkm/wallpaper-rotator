@@ -1,1 +1,67 @@
-/home/b3n/.config/systemd/user/rotate-wallpaper.timer
+# =============================================================================
+#  rotate-wallpaper.timer
+# -----------------------------------------------------------------------------
+#  A systemd USER timer unit. This is the "alarm clock" that periodically
+#  fires the rotate-wallpaper.service (which in turn runs the .sh script).
+#
+#  This file is installed at:
+#      ~/.config/systemd/user/rotate-wallpaper.timer
+#
+#  Quick command cheatsheet:
+#      systemctl --user daemon-reload         # re-read these unit files after editing
+#      systemctl --user enable --now ...timer # turn the schedule ON (also runs now)
+#      systemctl --user disable --now ...timer# turn the schedule OFF
+#      systemctl --user stop ...timer         # pause until next login
+#      systemctl --user start ...timer        # resume
+#      systemctl --user list-timers           # see when it fires next
+#      journalctl --user -u rotate-wallpaper.service  # see past run logs
+# =============================================================================
+
+[Unit]
+# Just a human-readable label. The actual interval is set by OnUnitActiveSec
+# below (and can be changed at runtime with the `wallpaper-duration` command),
+# so this description stays generic on purpose -- no number to drift out of sync.
+Description=Rotate GNOME desktop wallpaper on a schedule
+
+[Timer]
+# How long after BOOT (well, after login -- this is a user timer) to fire
+# the first time. 30s gives the desktop a moment to finish coming up.
+OnBootSec=30s
+
+# How often to fire AFTER the previous run finished.
+# ---- THIS IS THE KNOB YOU TWEAK TO CHANGE THE ROTATION FREQUENCY ----
+# (Or just run `wallpaper-duration <time>` which edits this line for you.)
+# Examples of valid values:
+#     30s       -> every 30 seconds
+#     2min      -> every 2 minutes
+#     15min     -> every 15 minutes
+#     1h        -> every hour  (current setting)
+#     1h 30min  -> every 90 minutes
+#     1d        -> once a day
+# After changing this value, run:
+#     systemctl --user daemon-reload
+#     systemctl --user restart rotate-wallpaper.timer
+OnUnitActiveSec=1h
+
+# Which service to fire each time. If you rename the .service file, change
+# this line to match the new name.
+Unit=rotate-wallpaper.service
+
+# --- Optional tweaks you might want later -----------------------------------
+#
+# Add a little randomness so it doesn't fire at exactly the same instant
+# (useful if you ever have many timers; mostly cosmetic here):
+#     RandomizedDelaySec=10s
+#
+# Make missed runs (e.g. while the laptop was suspended) fire as soon as
+# you wake up, instead of waiting for the next interval:
+#     Persistent=true
+#
+# Fire at specific clock times instead of intervals (replace OnBootSec /
+# OnUnitActiveSec with this), e.g. every hour on the hour:
+#     OnCalendar=hourly
+
+[Install]
+# This is what `systemctl --user enable` hooks into. timers.target is the
+# standard "start all enabled timers" target that runs at login.
+WantedBy=timers.target

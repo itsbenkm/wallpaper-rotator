@@ -1,1 +1,44 @@
-/home/b3n/.config/systemd/user/wallpaper-monitor.service
+# =============================================================================
+#  wallpaper-monitor.service
+# -----------------------------------------------------------------------------
+#  Runs wallpaper-monitor.sh in the background of your user session so manual
+#  wallpaper changes (via Settings -> Appearance) get logged. The script also
+#  cooperates with the rotator to label automatic changes as AUTO.
+#
+#  This file is installed at:
+#      ~/.config/systemd/user/wallpaper-monitor.service
+#
+#  Toggle commands:
+#      systemctl --user start wallpaper-monitor.service     # start now
+#      systemctl --user stop wallpaper-monitor.service      # stop now
+#      systemctl --user enable --now wallpaper-monitor.service   # always start at login
+#      systemctl --user disable --now wallpaper-monitor.service  # never start at login
+# =============================================================================
+
+[Unit]
+Description=Watch GNOME wallpaper changes and log them
+# Don't try to start before the desktop session is up; the monitor needs
+# the GNOME settings daemon (over D-Bus) to be reachable.
+After=graphical-session.target
+
+[Service]
+# Type=simple: a long-lived foreground process. The monitor reads from
+# `gsettings monitor` (which never returns on its own) so it stays running.
+Type=simple
+
+# The watcher script -- installed at ~/.local/bin/wallpaper-rotator/wallpaper-monitor.sh
+ExecStart=%h/.local/bin/wallpaper-rotator/wallpaper-monitor.sh
+
+# Always bring the monitor back up. `gsettings monitor` can end *cleanly* (exit
+# 0) if the settings daemon restarts and closes the stream -- with on-failure
+# that clean exit would NOT be restarted and logging would silently stop until
+# the next login. `always` covers both clean exits and crashes.
+# RestartSec gives D-Bus a moment to settle before retrying.
+Restart=always
+RestartSec=5s
+
+[Install]
+# default.target is the standard "I am logged in" target for user services,
+# so `systemctl --user enable` here means "start me automatically at every
+# login."
+WantedBy=default.target

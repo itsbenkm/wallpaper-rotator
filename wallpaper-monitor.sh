@@ -26,6 +26,14 @@ set -euo pipefail
 # inherit this; the fallback covers the case where they don't.
 export DBUS_SESSION_BUS_ADDRESS="${DBUS_SESSION_BUS_ADDRESS:-unix:path=/run/user/$(id -u)/bus}"
 
+# GNOME-only: bail out cleanly if gsettings or the background schema isn't here,
+# rather than letting `gsettings monitor` fail under `set -e`. (GNOME ships with Ubuntu.)
+if ! command -v gsettings >/dev/null 2>&1 || \
+   ! gsettings list-schemas 2>/dev/null | grep -q '^org.gnome.desktop.background$'; then
+    echo "wallpaper-monitor requires GNOME (gsettings)." >&2
+    exit 1
+fi
+
 # The marker file the rotator drops before each automatic change.
 # Lives in /run/user/$UID (a tmpfs that auto-clears at reboot), so we never
 # have to worry about stale markers from a previous session.
@@ -36,7 +44,7 @@ MARKER="/run/user/$(id -u)/wallpaper-rotator.auto"
 LOGGER="$HOME/.local/bin/wallpaper-rotator/wallpaper-log"
 
 # `gsettings monitor` streams a line every time the value changes:
-#     picture-uri: 'file:///home/b3n/.local/share/backgrounds/foo.jpg'
+#     picture-uri: 'file:///home/user/.local/share/backgrounds/foo.jpg'
 # We loop over those lines and decide AUTO vs MANUAL for each one.
 gsettings monitor org.gnome.desktop.background picture-uri | while IFS= read -r line; do
     # Strip everything up to and including the first "'" and the trailing "'".
@@ -51,9 +59,16 @@ gsettings monitor org.gnome.desktop.background picture-uri | while IFS= read -r 
         # Trim whitespace and fall back to AUTO if the marker is empty.
         event=$(tr -d '[:space:]' < "$MARKER")
         rm -f "$MARKER"
-        "$LOGGER" "${event:-AUTO}" "$path"
+        event="${event:-AUTO}"
+        "$LOGGER" "$event" "$path"
+        
+        # Reset the history offset pointer UNLESS this was a PREV/NEXT navigation event
+        if [[ "$event" != "PREV" && "$event" != "NEXT" ]]; then
+            rm -f "/run/user/$(id -u)/wallpaper-rotator.offset"
+        fi
     else
         # No marker -> a human (you) changed the wallpaper via Settings.
         "$LOGGER" MANUAL "$path"
+        rm -f "/run/user/$(id -u)/wallpaper-rotator.offset"
     fi
 done

@@ -2,6 +2,8 @@
 
 This is a small system that automatically rotates your GNOME desktop wallpaper at a chosen interval, using a random image from `~/.local/share/backgrounds/` (the folder GNOME's Settings -> Appearance "Add Picture..." button writes to).
 
+> **Requirements:** GNOME on a systemd-based Linux — it sets the wallpaper via `gsettings`. GNOME ships by default with Ubuntu, so on stock Ubuntu you're good to go. Other desktops (KDE, XFCE, Cinnamon, …) aren't supported; the installer detects this and stops with a clear message rather than half-installing.
+
 ---
 
 ## Installation
@@ -54,7 +56,7 @@ wallpaper-duration <time>   # Change how often the wallpaper rotates
                             #        wallpaper-duration 1d
 ```
 
-All five commands also write an entry to `~/Desktop/wallpaper-rotator/wallpaper.log` so you can see later when you toggled or changed things.
+All these commands also write an entry to the log — viewable any time at `~/Desktop/wallpaper-rotator.log` — so you can see later when you toggled or changed things.
 
 ### Typical workflow
 
@@ -67,10 +69,11 @@ All five commands also write an entry to `~/Desktop/wallpaper-rotator/wallpaper.
 
 ## The log file
 
-Everything the rotator does (and everything you do that affects the wallpaper) gets written to:
+Everything the rotator does (and everything you do that affects the wallpaper) gets written to a single log file. The real file lives in your XDG state dir, and the installer drops a clickable shortcut on your Desktop so you can open it any time:
 
 ```
-~/Desktop/wallpaper-rotator/wallpaper.log
+~/Desktop/wallpaper-rotator.log                   # convenient shortcut (a symlink)
+~/.local/state/wallpaper-rotator/wallpaper.log    # the real file it points to
 ```
 
 ### Event types
@@ -88,18 +91,26 @@ Everything the rotator does (and everything you do that affects the wallpaper) g
 
 ```bash
 # Watch live -- new entries appear as they happen
-tail -f ~/Desktop/wallpaper-rotator/wallpaper.log
+tail -f ~/Desktop/wallpaper-rotator.log
 
 # Show only manual changes
-grep MANUAL ~/Desktop/wallpaper-rotator/wallpaper.log
+grep MANUAL ~/Desktop/wallpaper-rotator.log
 ```
 
 ### Customizing the Log Location
-If you do not want your logs saved in the default `~/Desktop/wallpaper-rotator/` folder, you can easily change the path:
-1. Open the `wallpaper-log` script in any text editor.
-2. Find the line: `LOG="$HOME/Desktop/wallpaper-rotator/wallpaper.log"`
-3. Change it to wherever you want, for example: `LOG="$HOME/.local/share/wallpaper-rotator/wallpaper.log"`
-4. Run `./install.sh` again to apply the changes to your system.
+The log defaults to `~/.local/state/wallpaper-rotator/wallpaper.log`. To relocate it, set the `WALLPAPER_LOG` environment variable to your preferred path. For it to apply everywhere, set it in **both** places that touch the log:
+
+- **The systemd units** (the monitor is what writes the log entries). Add this under `[Service]` in both `rotate-wallpaper.service` and `wallpaper-monitor.service`:
+  ```
+  Environment=WALLPAPER_LOG=%h/path/to/wallpaper.log
+  ```
+  then `systemctl --user daemon-reload && systemctl --user restart rotate-wallpaper.timer wallpaper-monitor.service`.
+- **Your shell** (the `wallpaper-prev`/`wallpaper-next` history reader). Add to `~/.bashrc`:
+  ```bash
+  export WALLPAPER_LOG=$HOME/path/to/wallpaper.log
+  ```
+
+Then update the Desktop shortcut (`~/Desktop/wallpaper-rotator.log`) to point at the new file, or just remove it.
 
 ---
 
@@ -125,7 +136,16 @@ By default the script reads from `~/.local/share/backgrounds/`. To point it else
 
 ## Uninstalling completely
 
-If you ever want to nuke the whole setup:
+The easy way — run the bundled uninstaller from the repo folder:
+
+```bash
+./uninstall.sh
+```
+
+It stops & disables the units, removes the unit files and installed scripts, deletes the Desktop log shortcut, and strips the alias block from your `~/.bashrc`. Your log history is left in `~/.local/state/wallpaper-rotator/` (it prints how to delete that too, if you want it gone).
+
+<details>
+<summary>Or do it manually</summary>
 
 ```bash
 # Stop and disable the timer + monitor
@@ -138,9 +158,12 @@ rm ~/.config/systemd/user/rotate-wallpaper.timer
 rm ~/.config/systemd/user/wallpaper-monitor.service
 systemctl --user daemon-reload
 
-# Remove the scripts and logs
+# Remove the scripts, the Desktop shortcut, and (optionally) the logs
 rm -rf ~/.local/bin/wallpaper-rotator
-rm -rf ~/.local/share/wallpaper-rotator
+rm -f ~/Desktop/wallpaper-rotator.log
+rm -rf ~/.local/state/wallpaper-rotator
 
-# Finally, remove the "# --- Wallpaper rotator aliases ---" block from your ~/.bashrc
+# Finally, remove the block between the "# --- Wallpaper rotator aliases ---"
+# and "# --- End wallpaper rotator aliases ---" markers in your ~/.bashrc
 ```
+</details>

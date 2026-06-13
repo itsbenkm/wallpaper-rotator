@@ -10,8 +10,8 @@
 #      wallpaper-log <EVENT_TYPE> [detail...]
 #
 #  Examples:
-#      wallpaper-log AUTO     /home/b3n/.local/share/backgrounds/foo.jpg
-#      wallpaper-log MANUAL   /home/b3n/.local/share/backgrounds/bar.jpg
+#      wallpaper-log AUTO     /home/user/.local/share/backgrounds/foo.jpg
+#      wallpaper-log MANUAL   /home/user/.local/share/backgrounds/bar.jpg
 #      wallpaper-log ON
 #      wallpaper-log OFF
 #      wallpaper-log INTERVAL "2min -> 1h"
@@ -22,7 +22,10 @@
 
 set -euo pipefail
 
-LOG="$HOME/Desktop/wallpaper-rotator/wallpaper.log"
+# Canonical log path: XDG state dir (portable, per-user). Override with the
+# WALLPAPER_LOG env var if you want it somewhere else. The installer also drops
+# a convenience symlink on your Desktop pointing at this file.
+LOG="${WALLPAPER_LOG:-${XDG_STATE_HOME:-$HOME/.local/state}/wallpaper-rotator/wallpaper.log}"
 mkdir -p "$(dirname "$LOG")"
 
 # Max number of entries to keep. After each write, anything older than the

@@ -1,1 +1,5 @@
+# Personal logs never belong in the repo. The real log now lives in
+# ~/.local/state/wallpaper-rotator/ (with a convenience symlink on your Desktop),
+# so these patterns are mostly belt-and-suspenders for any stray local test logs.
 wallpaper.log
+*.log

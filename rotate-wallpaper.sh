@@ -45,6 +45,18 @@ WALLPAPER_DIR="${WALLPAPER_DIR:-$HOME/.local/share/backgrounds}"
 export DBUS_SESSION_BUS_ADDRESS="${DBUS_SESSION_BUS_ADDRESS:-unix:path=/run/user/$(id -u)/bus}"
 
 # -----------------------------------------------------------------------------
+#  GNOME check
+# -----------------------------------------------------------------------------
+# This tool drives the wallpaper through GNOME's gsettings. On non-GNOME
+# desktops the schema below won't exist, so we bail out with a clear message
+# instead of failing with a cryptic error. (GNOME ships with Ubuntu.)
+if ! command -v gsettings >/dev/null 2>&1 || \
+   ! gsettings list-schemas 2>/dev/null | grep -q '^org.gnome.desktop.background$'; then
+    echo "wallpaper-rotator requires GNOME (org.gnome.desktop.background via gsettings)." >&2
+    exit 1
+fi
+
+# -----------------------------------------------------------------------------
 #  Build the list of candidate images
 # -----------------------------------------------------------------------------
 # `find` walks WALLPAPER_DIR and emits every image file it sees.
@@ -72,7 +84,7 @@ fi
 #  Figure out which wallpaper is currently set (so we can avoid repeats)
 # -----------------------------------------------------------------------------
 # `gsettings get` returns a value wrapped in single quotes, e.g.
-#     'file:///home/b3n/.local/share/backgrounds/foo.jpg'
+#     'file:///home/user/.local/share/backgrounds/foo.jpg'
 # The pipeline strips the quotes (`tr -d "'"`) and the "file://" prefix (`sed`)
 # so we're left with a plain absolute path we can compare against.
 current="$(gsettings get org.gnome.desktop.background picture-uri 2>/dev/null | tr -d "'" | sed 's|^file://||')"
@@ -120,4 +132,4 @@ gsettings set org.gnome.desktop.background picture-uri-dark "$uri"
 
 # Note: we no longer echo "Wallpaper set: ..." here -- the monitor logs the
 # event with timestamp, so a duplicate would just be noise. To debug, watch
-# the live log:  tail -f ~/Desktop/wallpaper-rotator/wallpaper.log
+# the live log:  tail -f ~/Desktop/wallpaper-rotator.log

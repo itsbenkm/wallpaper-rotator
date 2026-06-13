@@ -1,1 +1,46 @@
-/home/b3n/.config/systemd/user/rotate-wallpaper.service
+# =============================================================================
+#  rotate-wallpaper.service
+# -----------------------------------------------------------------------------
+#  A systemd USER service unit. "User" means it runs as you, in your login
+#  session -- not as root. This file just tells systemd HOW to run the
+#  rotation script ONCE. The WHEN is handled by rotate-wallpaper.timer.
+#
+#  This file lives at:
+#      ~/.config/systemd/user/rotate-wallpaper.service
+#
+#  After editing this file you MUST tell systemd to re-read it:
+#      systemctl --user daemon-reload
+#      systemctl --user restart rotate-wallpaper.timer
+# =============================================================================
+
+[Unit]
+# Human-readable name. Shows up in `systemctl --user status` and journalctl.
+Description=Rotate GNOME desktop wallpaper
+
+# Don't try to run before the graphical desktop session is up. Without this,
+# the service could fire too early at login (before D-Bus is ready) and fail.
+After=graphical-session.target
+
+[Service]
+# Type=oneshot: this is a script that does its work and then exits. systemd
+# considers the service "successful" when the script exits with code 0.
+# (Contrast with Type=simple, which is for long-running daemons.)
+Type=oneshot
+
+# The actual command to run.
+#   %h  -> expands to your home directory (e.g. /home/you)
+# If you ever MOVE or RENAME the wallpaper-rotator folder, update this path
+# and then run:  systemctl --user daemon-reload
+ExecStart=%h/.local/bin/wallpaper-rotator/rotate-wallpaper.sh
+
+# --- Optional tweaks you might want later -----------------------------------
+#
+# Point the script at a different image folder without editing the .sh file:
+#     Environment=WALLPAPER_DIR=%h/Pictures/Wallpapers
+#
+# Get email/notification on failure (advanced):
+#     OnFailure=some-notifier.service
+#
+# Note: there is NO [Install] section here on purpose. We don't enable this
+# service directly -- the timer enables itself and pulls this service in
+# whenever it fires.

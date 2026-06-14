@@ -131,10 +131,12 @@ By default the script reads from `~/.local/share/backgrounds/`. To point it else
 
 ---
 
-## Uninstalling completely
+## Uninstallation
 
-The easy way — run the bundled uninstaller from the repo folder:
+**⚠️ IMPORTANT: Do not just delete the folder!** 
+Because this tool integrates with systemd, deleting the folder will leave a "ghost" timer trying to run in the background.
 
+To cleanly remove the script, aliases, and systemd hooks:
 ```bash
 ./uninstall.sh
 ```

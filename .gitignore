@@ -1,5 +1,4 @@
-# Personal logs never belong in the repo. The real log now lives in
-# ~/.local/state/wallpaper-rotator/ (with a convenience symlink on your Desktop),
-# so these patterns are mostly belt-and-suspenders for any stray local test logs.
+# The generated log file stays local to the project directory to keep
+# everything self-contained, so it should be ignored by git.
 wallpaper.log
 *.log

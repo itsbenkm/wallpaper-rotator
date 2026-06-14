@@ -22,10 +22,11 @@
 
 set -euo pipefail
 
-# Canonical log path: XDG state dir (portable, per-user). Override with the
-# WALLPAPER_LOG env var if you want it somewhere else. The installer also drops
-# a convenience symlink on your Desktop pointing at this file.
-LOG="${WALLPAPER_LOG:-${XDG_STATE_HOME:-$HOME/.local/state}/wallpaper-rotator/wallpaper.log}"
+# Canonical log path: kept within the cloned project directory to be completely
+# self-contained and portable. Override with the WALLPAPER_LOG env var if you
+# want it somewhere else.
+REPO_DIR="<REPO_DIR_PLACEHOLDER>"
+LOG="${WALLPAPER_LOG:-$REPO_DIR/wallpaper.log}"
 mkdir -p "$(dirname "$LOG")"
 
 # Max number of entries to keep. After each write, anything older than the

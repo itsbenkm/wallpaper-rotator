@@ -69,11 +69,10 @@ All these commands also write an entry to the log — viewable any time at `~/De
 
 ## The log file
 
-Everything the rotator does (and everything you do that affects the wallpaper) gets written to a single log file. The real file lives in your XDG state dir, and the installer drops a clickable shortcut on your Desktop so you can open it any time:
+Everything the rotator does (and everything you do that affects the wallpaper) gets written to a single log file. To keep this project completely self-contained and portable, the log file is generated directly inside the cloned repository directory:
 
 ```
-~/Desktop/wallpaper-rotator.log                   # convenient shortcut (a symlink)
-~/.local/state/wallpaper-rotator/wallpaper.log    # the real file it points to
+/path/to/wallpaper-rotator/wallpaper.log    # the generated log file
 ```
 
 ### Event types
@@ -91,14 +90,14 @@ Everything the rotator does (and everything you do that affects the wallpaper) g
 
 ```bash
 # Watch live -- new entries appear as they happen
-tail -f ~/Desktop/wallpaper-rotator.log
+tail -f wallpaper.log
 
 # Show only manual changes
-grep MANUAL ~/Desktop/wallpaper-rotator.log
+grep MANUAL wallpaper.log
 ```
 
 ### Customizing the Log Location
-The log defaults to `~/.local/state/wallpaper-rotator/wallpaper.log`. To relocate it, set the `WALLPAPER_LOG` environment variable to your preferred path. For it to apply everywhere, set it in **both** places that touch the log:
+The log defaults to the cloned repository directory. To relocate it, set the `WALLPAPER_LOG` environment variable to your preferred path. For it to apply everywhere, set it in **both** places that touch the log:
 
 - **The systemd units** (the monitor is what writes the log entries). Add this under `[Service]` in both `rotate-wallpaper.service` and `wallpaper-monitor.service`:
   ```
@@ -109,8 +108,6 @@ The log defaults to `~/.local/state/wallpaper-rotator/wallpaper.log`. To relocat
   ```bash
   export WALLPAPER_LOG=$HOME/path/to/wallpaper.log
   ```
-
-Then update the Desktop shortcut (`~/Desktop/wallpaper-rotator.log`) to point at the new file, or just remove it.
 
 ---
 
@@ -142,7 +139,7 @@ The easy way — run the bundled uninstaller from the repo folder:
 ./uninstall.sh
 ```
 
-It stops & disables the units, removes the unit files and installed scripts, deletes the Desktop log shortcut, and strips the alias block from your `~/.bashrc`. Your log history is left in `~/.local/state/wallpaper-rotator/` (it prints how to delete that too, if you want it gone).
+It stops & disables the units, removes the unit files and installed scripts, and strips the alias block from your `~/.bashrc`. Your log history is left untouched in the cloned repository directory.
 
 <details>
 <summary>Or do it manually</summary>
@@ -158,10 +155,8 @@ rm ~/.config/systemd/user/rotate-wallpaper.timer
 rm ~/.config/systemd/user/wallpaper-monitor.service
 systemctl --user daemon-reload
 
-# Remove the scripts, the Desktop shortcut, and (optionally) the logs
+# Remove the scripts
 rm -rf ~/.local/bin/wallpaper-rotator
-rm -f ~/Desktop/wallpaper-rotator.log
-rm -rf ~/.local/state/wallpaper-rotator
 
 # Finally, remove the block between the "# --- Wallpaper rotator aliases ---"
 # and "# --- End wallpaper rotator aliases ---" markers in your ~/.bashrc

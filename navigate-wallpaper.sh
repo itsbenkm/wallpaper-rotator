@@ -17,8 +17,9 @@ if [[ "$DIRECTION" != "PREV" && "$DIRECTION" != "NEXT" ]]; then
 fi
 
 export DBUS_SESSION_BUS_ADDRESS="${DBUS_SESSION_BUS_ADDRESS:-unix:path=/run/user/$(id -u)/bus}"
-# Same canonical log location as the wallpaper-log helper (override with WALLPAPER_LOG).
-LOG="${WALLPAPER_LOG:-${XDG_STATE_HOME:-$HOME/.local/state}/wallpaper-rotator/wallpaper.log}"
+# Canonical log path: kept within the cloned project directory.
+REPO_DIR="<REPO_DIR_PLACEHOLDER>"
+LOG="${WALLPAPER_LOG:-$REPO_DIR/wallpaper.log}"
 OFFSET_FILE="/run/user/$(id -u)/wallpaper-rotator.offset"
 
 if [ ! -f "$LOG" ]; then

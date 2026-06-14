@@ -27,7 +27,20 @@ set -euo pipefail
 # want it somewhere else.
 REPO_DIR="<REPO_DIR_PLACEHOLDER>"
 LOG="${WALLPAPER_LOG:-$REPO_DIR/wallpaper.log}"
-mkdir -p "$(dirname "$LOG")"
+
+# Guard: if the default in-repo log location is gone (folder moved or deleted),
+# don't silently recreate a ghost folder. Warn and skip logging. Exit 0 so the
+# monitor (which runs under `set -e`) keeps running. A custom WALLPAPER_LOG
+# location is still created as before.
+log_dir="$(dirname "$LOG")"
+if [ ! -d "$log_dir" ]; then
+    if [ -z "${WALLPAPER_LOG:-}" ]; then
+        echo "wallpaper-rotator: project folder '$REPO_DIR' not found (moved or deleted)." >&2
+        echo "Re-run install.sh from its new location to restore logging." >&2
+        exit 0
+    fi
+    mkdir -p "$log_dir"
+fi
 
 # Max number of entries to keep. After each write, anything older than the
 # most recent MAX_LINES gets dropped. 500 ≈ a few weeks at hourly rotation.

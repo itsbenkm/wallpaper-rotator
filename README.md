@@ -131,6 +131,12 @@ By default the script reads from `~/.local/share/backgrounds/`. To point it else
 
 ---
 
+## Moving or Relocating the Folder
+
+The installer records **this folder's location** so the tool knows where to keep its log. If you move or rename the folder later, the installed systemd units will still point at the old path.
+
+If you need to relocate it, just **re-run `./install.sh`** from the new location (or run `./uninstall.sh` *before* moving). Rotation keeps working if the folder goes missing, but logging pauses and the tool warns you to re-install from the new location.
+
 ## Uninstallation
 
 **⚠️ IMPORTANT: Do not just delete the folder!** 

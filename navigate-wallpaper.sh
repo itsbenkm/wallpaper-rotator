@@ -22,6 +22,15 @@ REPO_DIR="<REPO_DIR_PLACEHOLDER>"
 LOG="${WALLPAPER_LOG:-$REPO_DIR/wallpaper.log}"
 OFFSET_FILE="/run/user/$(id -u)/wallpaper-rotator.offset"
 
+# Guard: detect a moved/deleted project folder (the repo path was baked in at
+# install time) so the user gets a clear message instead of a misleading
+# "no history found".
+if [ -z "${WALLPAPER_LOG:-}" ] && [ ! -d "$REPO_DIR" ]; then
+    echo "wallpaper-rotator: project folder '$REPO_DIR' not found (moved or deleted)." >&2
+    echo "Re-run install.sh from its new location." >&2
+    exit 1
+fi
+
 if [ ! -f "$LOG" ]; then
     echo "No wallpaper history found."
     exit 1

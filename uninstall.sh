@@ -3,9 +3,9 @@
 #  uninstall.sh -- cleanly remove Wallpaper Rotator
 # -----------------------------------------------------------------------------
 #  Reverses install.sh: stops & disables the systemd units, removes the unit
-#  files and installed scripts, drops the Desktop log symlink, and strips the
-#  alias block from ~/.bashrc. Your log history in the state dir is kept (the
-#  script tells you where, so you can delete it yourself if you want).
+#  files and installed scripts, and strips the alias source line from
+#  ~/.bashrc. Your log history (wallpaper.log in the project folder) is kept --
+#  the script tells you where, so you can delete it yourself if you want.
 # =============================================================================
 set -uo pipefail   # not -e: we want to keep going even if a piece is already gone
 

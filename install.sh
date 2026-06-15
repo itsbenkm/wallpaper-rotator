@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Run from the script's own directory so relative copies and the baked-in
+# project path are correct even if the installer is invoked from elsewhere.
+cd "$(dirname "$(readlink -f "$0")")"
+
 USER_HOME=$HOME
 INSTALL_DIR="$USER_HOME/.local/bin/wallpaper-rotator"
 SYSTEMD_DIR="$USER_HOME/.config/systemd/user"

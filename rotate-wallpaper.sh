@@ -132,4 +132,5 @@ gsettings set org.gnome.desktop.background picture-uri-dark "$uri"
 
 # Note: we no longer echo "Wallpaper set: ..." here -- the monitor logs the
 # event with timestamp, so a duplicate would just be noise. To debug, watch
-# the live log:  tail -f ~/Desktop/wallpaper-rotator.log
+# the live log (wallpaper.log inside your wallpaper-rotator folder):
+#   tail -f /path/to/wallpaper-rotator/wallpaper.log

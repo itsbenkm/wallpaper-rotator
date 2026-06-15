@@ -68,6 +68,6 @@ Wallpaper rotator commands:
   wallpaper-duration <time>   Change rotation frequency (e.g. 30s, 5min, 1h, 1d).
   wallpaper-help              Show this help.
 
-Log file: ~/Desktop/wallpaper-rotator.log
+Log file: wallpaper.log inside your wallpaper-rotator folder (or $WALLPAPER_LOG if set).
 HELP
 }

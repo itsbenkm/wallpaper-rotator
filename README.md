@@ -56,7 +56,7 @@ wallpaper-duration <time>   # Change how often the wallpaper rotates
                             #        wallpaper-duration 1d
 ```
 
-All these commands also write an entry to the log — viewable any time at `~/Desktop/wallpaper-rotator.log` — so you can see later when you toggled or changed things.
+All these commands also write an entry to the log — `wallpaper.log` inside your wallpaper-rotator folder (see [The log file](#the-log-file) below) — so you can see later when you toggled or changed things.
 
 ### Typical workflow
 
@@ -166,7 +166,7 @@ systemctl --user daemon-reload
 # Remove the scripts
 rm -rf ~/.local/bin/wallpaper-rotator
 
-# Finally, remove the block between the "# --- Wallpaper rotator aliases ---"
-# and "# --- End wallpaper rotator aliases ---" markers in your ~/.bashrc
+# Finally, remove this single line from your ~/.bashrc:
+#   [ -f ~/.local/bin/wallpaper-rotator/aliases.sh ] && source ~/.local/bin/wallpaper-rotator/aliases.sh
 ```
 </details>

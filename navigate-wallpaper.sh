@@ -40,8 +40,16 @@ fi
 # Skip any wallpaper whose file no longer exists on disk, so navigation never
 # tries to set a deleted image (which GNOME would render as a blank background).
 history_list=()
+last_added=""
 while IFS= read -r line; do
-    [ -n "$line" ] && [ -f "$line" ] && history_list+=("$line")
+    # Skip blanks, files that no longer exist, and CONSECUTIVE duplicates
+    # (the same wallpaper logged twice in a row, e.g. a manual re-set) so
+    # prev/next always move to a visibly different image instead of sticking
+    # on the same one. Non-consecutive repeats (a -> b -> a) are preserved.
+    if [ -n "$line" ] && [ -f "$line" ] && [ "$line" != "$last_added" ]; then
+        history_list+=("$line")
+        last_added="$line"
+    fi
 done < <(grep -E ' (AUTO|CHANGE|MANUAL) ' "$LOG" | sed -E 's/.* (AUTO|CHANGE|MANUAL)[[:space:]]+(.*)/\2/')
 
 count=${#history_list[@]}

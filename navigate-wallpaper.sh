@@ -63,6 +63,10 @@ offset=0
 if [ -f "$OFFSET_FILE" ]; then
     offset=$(cat "$OFFSET_FILE" 2>/dev/null || echo 0)
 fi
+# Defensive: reset to 0 if the offset file ever held non-numeric junk, so the
+# arithmetic below can't error out under `set -e`. (It lives in tmpfs and is
+# only written by these scripts, so this is just belt-and-suspenders.)
+[[ "$offset" =~ ^[0-9]+$ ]] || offset=0
 
 if [ "$DIRECTION" = "PREV" ]; then
     new_offset=$((offset + 1))

@@ -67,7 +67,10 @@ printf '%s  %-9s %s\n' "$ts" "$event" "$detail" >> "$LOG"
 # We use a temp file + atomic move so a crash mid-trim can't truncate the log.
 lines=$(wc -l < "$LOG")
 if [ "$lines" -gt "$MAX_LINES" ]; then
-    tmp=$(mktemp)
+    # Create the temp file in the log's own directory so the mv below is an
+    # atomic same-filesystem rename (mktemp's default /tmp could be a different
+    # mount, making mv a non-atomic copy+delete).
+    tmp=$(mktemp -p "$(dirname "$LOG")")
     tail -n "$MAX_LINES" "$LOG" > "$tmp"
     mv "$tmp" "$LOG"
 fi

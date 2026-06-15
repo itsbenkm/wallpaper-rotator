@@ -31,7 +31,8 @@ rm -rf "$INSTALL_DIR"
 
 # 4. Strip the alias block from ~/.bashrc
 if [ -f "$BASHRC" ] && grep -q "source ~/.local/bin/wallpaper-rotator/aliases.sh" "$BASHRC"; then
-    tmp=$(mktemp)
+    # Temp file beside ~/.bashrc so the mv is an atomic same-filesystem rename.
+    tmp=$(mktemp -p "$(dirname "$BASHRC")")
     grep -v "source ~/.local/bin/wallpaper-rotator/aliases.sh" "$BASHRC" > "$tmp"
     mv "$tmp" "$BASHRC"
     echo "Removed the alias source line from ~/.bashrc (open a new terminal to refresh)."

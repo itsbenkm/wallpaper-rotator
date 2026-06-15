@@ -50,7 +50,7 @@ while IFS= read -r line; do
         history_list+=("$line")
         last_added="$line"
     fi
-done < <(grep -E ' (AUTO|CHANGE|MANUAL) ' "$LOG" | sed -E 's/.* (AUTO|CHANGE|MANUAL)[[:space:]]+(.*)/\2/')
+done < <(grep -E ' (AUTO|CHANGE|MANUAL) ' "$LOG" | sed -E 's/^.{19}[[:space:]]+[^[:space:]]+[[:space:]]+//')
 
 count=${#history_list[@]}
 if [ "$count" -eq 0 ]; then

@@ -41,7 +41,17 @@ wallpaper-duration() {
         echo "To change it, use: wallpaper-duration <time> (e.g. 30s, 5min, 1h, 1d)"
         return 0
     fi
-    if ! [[ "$1" =~ ^[0-9]+(s|sec|secs|seconds?|m|min|mins|minutes?|h|hr|hrs|hours?|d|days?)?$ ]]; then
+    # Validate against systemd's own timespan parser when available, so we
+    # accept exactly what the timer will accept (this also allows compound
+    # forms like "1h 30min" if quoted, and rejects forms systemd can't parse
+    # such as "5mins"/"2hrs" that a loose regex would wrongly let through).
+    # Fall back to a regex of systemd-valid units if systemd-analyze is absent.
+    if command -v systemd-analyze >/dev/null 2>&1; then
+        if ! systemd-analyze timespan "$1" >/dev/null 2>&1; then
+            echo -e "\033[0;31mInvalid duration '$1'.\033[0m Examples: 30s, 5min, 1h, 1d"
+            return 1
+        fi
+    elif ! [[ "$1" =~ ^[0-9]+(s|sec|seconds?|m|min|minutes?|h|hr|hours?|d|days?)?$ ]]; then
         echo -e "\033[0;31mInvalid duration '$1'.\033[0m Examples: 30s, 5min, 1h, 1d"
         return 1
     fi

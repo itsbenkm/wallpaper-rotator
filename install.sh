@@ -8,9 +8,10 @@ cd "$(dirname "$(readlink -f "$0")")"
 USER_HOME=$HOME
 INSTALL_DIR="$USER_HOME/.local/bin/wallpaper-rotator"
 SYSTEMD_DIR="$USER_HOME/.config/systemd/user"
-# Respect a custom WALLPAPER_LOG if the user exported one; otherwise default to
-# the current cloned directory to keep everything self-contained.
-LOG_FILE="${WALLPAPER_LOG:-$PWD/wallpaper.log}"
+# The log lives in the cloned directory to keep everything self-contained.
+# (To relocate it, see "Customizing the Log Location" in the README -- that
+# requires editing the systemd units, so the installer doesn't bake it in.)
+LOG_FILE="$PWD/wallpaper.log"
 
 echo "Installing Wallpaper Rotator for user: $USER"
 
@@ -49,9 +50,11 @@ chmod +x "$INSTALL_DIR/wallpaper-monitor.sh"
 chmod +x "$INSTALL_DIR/wallpaper-log"
 
 # Patch the installed scripts with the physical location of this repository
-# so the log file is kept locally alongside the source code.
-sed -i "s|<REPO_DIR_PLACEHOLDER>|$PWD|g" "$INSTALL_DIR/wallpaper-log"
-sed -i "s|<REPO_DIR_PLACEHOLDER>|$PWD|g" "$INSTALL_DIR/navigate-wallpaper.sh"
+# so the log file is kept locally alongside the source code. Escape sed
+# metacharacters (&, |, \) so paths containing them don't corrupt the edit.
+REPO_DIR_ESC=$(printf '%s' "$PWD" | sed -e 's/[&\\|]/\\&/g')
+sed -i "s|<REPO_DIR_PLACEHOLDER>|$REPO_DIR_ESC|g" "$INSTALL_DIR/wallpaper-log"
+sed -i "s|<REPO_DIR_PLACEHOLDER>|$REPO_DIR_ESC|g" "$INSTALL_DIR/navigate-wallpaper.sh"
 
 echo "Scripts installed to $INSTALL_DIR"
 
